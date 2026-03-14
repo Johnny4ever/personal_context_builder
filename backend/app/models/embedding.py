@@ -22,7 +22,7 @@ class Embedding(Base):
     memorized_item_id: Mapped[int] = mapped_column(
         ForeignKey("memorized_items.id", ondelete="CASCADE"), index=True
     )
-    embedding_vector: Mapped[list] = mapped_column(Vector(1536))
+    embedding_vector: Mapped[list] = mapped_column(Vector(1024))
     embedding_source_type: Mapped[EmbeddingSourceType] = mapped_column(
         SAEnum(EmbeddingSourceType)
     )

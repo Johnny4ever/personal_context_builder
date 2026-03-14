@@ -24,11 +24,12 @@ async def expire_old_drafts(db: AsyncSession) -> int:
     expired = list(result.scalars().all())
 
     for draft in expired:
-        if draft.temp_conversation_id:
-            temp = await db.get(ConversationObservedTemp, draft.temp_conversation_id)
+        temp_id = draft.temp_conversation_id
+        await db.delete(draft)
+        if temp_id:
+            temp = await db.get(ConversationObservedTemp, temp_id)
             if temp:
                 await db.delete(temp)
-        await db.delete(draft)
 
     if expired:
         await db.commit()

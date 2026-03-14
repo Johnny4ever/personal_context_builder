@@ -12,12 +12,15 @@ class EmbeddingService:
         self.db = db
 
     async def _get_embedding(self, text: str) -> list[float]:
-        """Call OpenAI embeddings API with the backend's own API key."""
+        """Call Voyage AI embeddings API with the backend's own API key."""
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://api.openai.com/v1/embeddings",
-                headers={"Authorization": f"Bearer {settings.embedding_api_key}"},
-                json={"input": text, "model": settings.embedding_model},
+                "https://api.voyageai.com/v1/embeddings",
+                headers={
+                    "Authorization": f"Bearer {settings.embedding_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={"model": settings.embedding_model, "input": [text]},
                 timeout=30.0,
             )
             response.raise_for_status()
@@ -54,14 +57,14 @@ class EmbeddingService:
 
     async def search(
         self, user_id: int, query_vector: list[float], limit: int = 5
-    ) -> list[MemorizedItem]:
-        from sqlalchemy import select
-
+    ) -> list[tuple[MemorizedItem, float]]:
+        # cosine_distance: 0 = identical, 1 = orthogonal, 2 = opposite
+        distance_col = Embedding.embedding_vector.cosine_distance(query_vector).label("distance")
         result = await self.db.execute(
-            select(MemorizedItem)
+            select(MemorizedItem, distance_col)
             .join(Embedding, Embedding.memorized_item_id == MemorizedItem.id)
             .where(MemorizedItem.user_id == user_id)
-            .order_by(Embedding.embedding_vector.cosine_distance(query_vector))
+            .order_by(distance_col)
             .limit(limit)
         )
-        return list(result.scalars().all())
+        return [(row[0], float(row[1])) for row in result.all()]

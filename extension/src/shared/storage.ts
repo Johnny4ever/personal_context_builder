@@ -14,7 +14,7 @@ export async function getApiKey(): Promise<string | null> {
 }
 
 export async function setApiKey(key: string): Promise<void> {
-  await chrome.storage.local.set({ [KEYS.modelApiKey]: key });
+  await chrome.storage.local.set({ [KEYS.modelApiKey]: key.replace(/\s+/g, "") });
 }
 
 export async function getModelProvider(): Promise<ModelProvider> {

@@ -1,4 +1,4 @@
-export type ModelProvider = "openai" | "anthropic";
+export type ModelProvider = "openai" | "anthropic" | "gemini";
 
 export interface CapturedConversation {
   platform: string;

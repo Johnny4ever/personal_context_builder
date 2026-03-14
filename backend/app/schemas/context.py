@@ -11,6 +11,7 @@ class MemoryResult(BaseModel):
     tags: list[str]
     source_platform: str
     save_mode: str
+    similarity: int  # 0-100, higher = more relevant
 
 
 class ContextResponse(BaseModel):

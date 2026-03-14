@@ -14,6 +14,7 @@ class MemorizedItemRead(BaseModel):
     tags_json: list[str] | None
     save_mode: SaveMode
     created_at: datetime
+    has_embedding: bool = False
 
     model_config = {"from_attributes": True}
 

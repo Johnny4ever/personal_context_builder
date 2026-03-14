@@ -28,6 +28,7 @@ export interface Memory {
   tags_json: string[] | null;
   save_mode: SaveMode;
   created_at: string;
+  has_embedding: boolean;
 }
 
 export interface MemoryList {
@@ -42,6 +43,19 @@ export interface ProfileFact {
   confidence_score: number | null;
   source_memory_id: number | null;
   updated_at: string;
+}
+
+export interface MemoryResult {
+  summary: string;
+  tags: string[];
+  source_platform: string;
+  save_mode: string;
+  similarity: number;
+}
+
+export interface ContextResponse {
+  profile_summary: string;
+  relevant_memories: MemoryResult[];
 }
 
 export interface ApiToken {

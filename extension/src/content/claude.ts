@@ -63,21 +63,46 @@ function injectCaptureButton(): void {
   document.body.appendChild(btn);
 }
 
+function setBtnState(text: string, bg: string, disabled: boolean): void {
+  const btn = document.getElementById("vault-capture-btn-claude") as HTMLButtonElement | null;
+  if (!btn) return;
+  btn.textContent = text;
+  btn.style.background = bg;
+  btn.disabled = disabled;
+  btn.style.cursor = disabled ? "default" : "pointer";
+  btn.style.opacity = disabled ? "0.8" : "1";
+}
+
 function triggerCapture(): void {
   const conversation = extractLastExchange();
   if (!conversation) {
-    alert("No conversation found to capture.");
+    showToast("No conversation found to capture.", "error");
     return;
   }
+
+  setBtnState("Capturing…", "#6d28d9", true);
 
   chrome.runtime.sendMessage(
     { type: "CAPTURE_REQUESTED", payload: conversation } as ExtensionMessage,
     (response: ExtensionMessage) => {
+      if (chrome.runtime.lastError) {
+        setBtnState("Capture to Vault", "#7c3aed", false);
+        showToast(`Extension error: ${chrome.runtime.lastError.message}`, "error");
+        return;
+      }
       if (response?.type === "CAPTURE_COMPLETE") {
+        setBtnState("✓ Saved!", "#16a34a", true);
         showToast("Saved to review queue in vault!", "success");
+        setTimeout(() => setBtnState("Capture to Vault", "#7c3aed", false), 3000);
       } else if (response?.type === "CAPTURE_FAILED") {
-        const payload = response.payload as { message: string };
+        const payload = response.payload as { error: string; message: string };
+        const isAlready = payload.error === "duplicate";
+        setBtnState(isAlready ? "Already captured" : "✗ Failed", isAlready ? "#6b7280" : "#dc2626", true);
         showToast(payload.message || "Capture failed", "error");
+        setTimeout(() => setBtnState("Capture to Vault", "#7c3aed", false), 3000);
+      } else {
+        setBtnState("Capture to Vault", "#7c3aed", false);
+        showToast("No response from background worker — check extension errors", "error");
       }
     }
   );

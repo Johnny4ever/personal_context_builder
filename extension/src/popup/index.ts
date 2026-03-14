@@ -35,7 +35,7 @@ async function render(): Promise<void> {
   const apiKey = await getApiKey();
   const provider = await getModelProvider();
   const token = await getVaultToken();
-  const draftsCount = token ? await getDraftsCount() : 0;
+  const draftsCount = token ? await getDraftsCount().catch(() => 0) : 0;
 
   // Status / drafts section
   if (token) {
@@ -80,7 +80,7 @@ async function render(): Promise<void> {
 
   // Provider select
   const providerSelect = el("select", { id: "provider-select" });
-  for (const [val, label] of [["openai", "OpenAI"], ["anthropic", "Anthropic (Claude)"]] as const) {
+  for (const [val, label] of [["openai", "OpenAI"], ["anthropic", "Anthropic (Claude)"], ["gemini", "Google Gemini (free)"]] as const) {
     const opt = el("option", { value: val }, label);
     if (provider === val) opt.selected = true;
     providerSelect.append(opt);
@@ -103,7 +103,7 @@ async function render(): Promise<void> {
     app.append(div("section", captureBtn, captureStatus));
   }
 
-  bindEvents(token);
+  bindEvents(!!token);
 }
 
 function setStatus(id: string, cls: string, text: string): void {
@@ -135,7 +135,7 @@ function bindEvents(isLoggedIn: boolean): void {
         const tokens = await vaultLogin(email, password);
         await setVaultTokens(tokens.access_token, tokens.refresh_token);
         setStatus("login-status", "success", "Logged in!");
-        setTimeout(render, 800);
+        setTimeout(() => render().catch(() => {}), 800);
       } catch {
         setStatus("login-status", "error", "Login failed — check credentials and vault URL");
       }
@@ -143,7 +143,7 @@ function bindEvents(isLoggedIn: boolean): void {
   } else {
     document.getElementById("logout-btn")?.addEventListener("click", async () => {
       await clearVaultTokens();
-      render();
+      render().catch(() => {});
     });
 
     document.getElementById("capture-btn")?.addEventListener("click", async () => {
@@ -158,7 +158,7 @@ function bindEvents(isLoggedIn: boolean): void {
         }
         if (response?.type === "CAPTURE_COMPLETE") {
           setStatus("capture-status", "success", "Captured! Check your drafts.");
-          setTimeout(render, 1500);
+          setTimeout(() => render().catch(() => {}), 1500);
         } else {
           const msg = response?.payload?.message ?? "Capture failed";
           setStatus("capture-status", "error", msg);
@@ -168,4 +168,7 @@ function bindEvents(isLoggedIn: boolean): void {
   }
 }
 
-render();
+render().catch((err) => {
+  const app = document.getElementById("app")!;
+  app.textContent = `Error: ${err.message}`;
+});

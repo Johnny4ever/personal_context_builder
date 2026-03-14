@@ -17,7 +17,7 @@ class UserProfile(Base):
     profile_value: Mapped[str] = mapped_column(Text)
     confidence_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     source_memory_id: Mapped[int | None] = mapped_column(
-        ForeignKey("memorized_items.id"), nullable=True
+        ForeignKey("memorized_items.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

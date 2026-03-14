@@ -96,7 +96,7 @@ function DraftCard({
           <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>Extracted facts</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {Object.entries(draft.candidate_facts_json).map(([k, v]) => (
-              <span key={k} style={{ background: "#f3f4f6", borderRadius: 4, padding: "2px 8px", fontSize: 12 }}>{k}: {v}</span>
+              <span key={k} style={{ background: "#f3f4f6", borderRadius: 4, padding: "2px 8px", fontSize: 12 }}>{k}: {typeof v === "object" ? JSON.stringify(v) : String(v)}</span>
             ))}
           </div>
         </div>

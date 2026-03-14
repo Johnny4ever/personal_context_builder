@@ -1,4 +1,5 @@
 import httpx
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -12,15 +13,31 @@ class ContextService:
         self.db = db
 
     async def _embed_query(self, text: str) -> list[float]:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.openai.com/v1/embeddings",
-                headers={"Authorization": f"Bearer {settings.embedding_api_key}"},
-                json={"input": text, "model": settings.embedding_model},
-                timeout=30.0,
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.voyageai.com/v1/embeddings",
+                    headers={
+                        "Authorization": f"Bearer {settings.embedding_api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={"model": settings.embedding_model, "input": [text]},
+                    timeout=30.0,
+                )
+                if response.status_code == 429:
+                    raise HTTPException(
+                        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                        detail="Embedding API rate limit hit — wait a moment and try again.",
+                    )
+                response.raise_for_status()
+                return response.json()["data"][0]["embedding"]
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Embedding API error: {exc}",
             )
-            response.raise_for_status()
-            return response.json()["data"][0]["embedding"]
 
     async def query(self, user_id: int, data: ContextQuery) -> ContextResponse:
         query_vector = await self._embed_query(data.query)
@@ -38,8 +55,9 @@ class ContextService:
                 tags=m.tags_json or [],
                 source_platform=m.source_platform,
                 save_mode=m.save_mode.value,
+                similarity=max(0, round((1 - distance) * 100)),
             )
-            for m in memories
+            for m, distance in memories
         ]
 
         return ContextResponse(

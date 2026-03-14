@@ -1,6 +1,6 @@
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "./auth";
 
-const BASE = "/api/v1";
+const BASE = `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001"}/api/v1`;
 
 async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const token = getAccessToken();
@@ -70,6 +70,8 @@ export const getMemories = (skip = 0, limit = 20) =>
   json<import("./types").MemoryList>(`/memories/?skip=${skip}&limit=${limit}`);
 export const getMemory = (id: number) => json<import("./types").Memory>(`/memories/${id}`);
 export const deleteMemory = (id: number) => apiFetch(`/memories/${id}`, { method: "DELETE" });
+export const vectorizeMemory = (id: number) =>
+  json<{ status: string }>(`/memories/${id}/vectorize`, { method: "POST" });
 
 // Profile
 export const getProfile = () => json<import("./types").ProfileFact[]>("/profile/");
@@ -77,6 +79,13 @@ export const updateProfileFact = (key: string, value: string) =>
   json<import("./types").ProfileFact>(`/profile/${encodeURIComponent(key)}`, {
     method: "PATCH",
     body: JSON.stringify({ profile_value: value }),
+  });
+
+// Context search
+export const queryContext = (query: string, limit = 5) =>
+  json<import("./types").ContextResponse>("/context/query", {
+    method: "POST",
+    body: JSON.stringify({ query, limit }),
   });
 
 // Tokens
