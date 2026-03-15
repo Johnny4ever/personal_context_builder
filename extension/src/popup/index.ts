@@ -42,7 +42,8 @@ async function render(): Promise<void> {
     const countText = draftsCount > 0
       ? `${draftsCount} draft${draftsCount > 1 ? "s" : ""} awaiting review`
       : "No pending drafts";
-    const link = el("a", { href: vaultUrl, target: "_blank" }, "Open dashboard →");
+    const dashboardUrl = (() => { try { const u = new URL(vaultUrl); u.port = "3000"; u.pathname = "/"; return u.toString(); } catch { return "http://localhost:3000"; } })();
+    const link = el("a", { href: dashboardUrl, target: "_blank" }, "Open dashboard →");
     app.append(
       div("section",
         div("drafts-count", countText),
