@@ -58,7 +58,7 @@ export const getDrafts = () => json<import("./types").Draft[]>("/drafts/");
 export const getDraft = (id: number) => json<import("./types").Draft>(`/drafts/${id}`);
 export const approveDraft = (
   id: number,
-  body: { save_mode: string; summary_text?: string; approved_facts_json?: Record<string, string>; tags_json?: string[] }
+  body: { save_mode: string; summary_text?: string; detail_summary?: string | null; approved_facts_json?: Record<string, string>; tags_json?: string[] }
 ) => json<import("./types").Memory>(`/drafts/${id}/approve`, { method: "POST", body: JSON.stringify(body) });
 export const dismissDraft = (id: number) =>
   apiFetch(`/drafts/${id}`, { method: "DELETE" });

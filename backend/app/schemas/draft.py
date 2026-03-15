@@ -12,6 +12,7 @@ class DraftCreate(BaseModel):
     IMPORTANT: raw_text is intentionally absent — the backend never receives raw conversation text.
     """
     summary_text: str
+    detail_summary: str | None = None
     candidate_facts_json: dict | None = None
     suggested_tags_json: list[str] | None = None
     source_platform: str
@@ -22,6 +23,7 @@ class DraftRead(BaseModel):
     id: int
     user_id: int
     summary_text: str
+    detail_summary: str | None
     candidate_facts_json: dict | None
     suggested_tags_json: list[str] | None
     draft_status: DraftStatus
@@ -37,5 +39,6 @@ class DraftApprove(BaseModel):
     """User reviews and optionally edits the draft before approving."""
     save_mode: SaveMode = SaveMode.summary_only
     summary_text: str | None = None
+    detail_summary: str | None = None
     approved_facts_json: dict | None = None
     tags_json: list[str] | None = None

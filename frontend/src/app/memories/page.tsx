@@ -109,7 +109,8 @@ export default function MemoriesPage() {
                   <span style={{ fontSize: 12, background: "#dbeafe", color: "#1e40af", borderRadius: 4, padding: "2px 6px" }}>{r.save_mode}</span>
                 </div>
               </div>
-              <p style={{ fontSize: 14, marginBottom: 6 }}>{r.summary}</p>
+              <p style={{ fontWeight: 600, fontSize: 14, marginBottom: r.detail ? 4 : 6 }}>{r.headline}</p>
+              {r.detail && <p style={{ fontSize: 13, color: "#374151", marginBottom: 6 }}>{r.detail}</p>}
               {r.tags.length > 0 && (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {r.tags.map((t) => <span key={t} style={{ background: "#ede9fe", color: "#6d28d9", borderRadius: 4, padding: "2px 8px", fontSize: 12 }}>#{t}</span>)}
@@ -134,7 +135,12 @@ export default function MemoriesPage() {
               <span style={{ fontSize: 12, background: "#f3f4f6", borderRadius: 4, padding: "2px 6px" }}>{m.save_mode}</span>
             </div>
           </div>
-          <p style={{ marginBottom: 8 }}>{m.summary_text}</p>
+          <p style={{ fontWeight: 600, marginBottom: m.detail_summary ? 4 : 8 }}>{m.summary_text}</p>
+          {m.detail_summary && (
+            <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 8 }}>
+              {m.detail_summary.length > 160 ? m.detail_summary.slice(0, 160) + "…" : m.detail_summary}
+            </p>
+          )}
           {m.tags_json && m.tags_json.length > 0 && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
               {m.tags_json.map((t) => <span key={t} style={{ background: "#ede9fe", color: "#6d28d9", borderRadius: 4, padding: "2px 8px", fontSize: 12 }}>#{t}</span>)}

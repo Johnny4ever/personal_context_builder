@@ -50,13 +50,15 @@ async function summariseWithOpenAI(
   apiKey: string
 ): Promise<DraftSummary> {
   const prompt = `You are a memory assistant. Summarise the following AI conversation into:
-1. A concise summary (1-2 sentences)
-2. Key facts about the user as a JSON object (e.g. {"role": "analyst", "skills": "SQL"})
-3. Relevant tags as a JSON array (e.g. ["career", "skills"])
+1. A headline: one sentence (≤ 15 words) naming the core topic — used for search
+2. A detail: 2-5 sentences covering what was discussed, key decisions, and notable facts or entities — returned to the AI model
+3. Key facts about the user as a JSON object (e.g. {"role": "analyst", "skills": "SQL"})
+4. Relevant tags as a JSON array (e.g. ["career", "skills"])
 
 Return ONLY valid JSON in this exact format:
 {
-  "summary": "...",
+  "headline": "...",
+  "detail": "...",
   "facts": { "key": "value" },
   "tags": ["tag1", "tag2"]
 }
@@ -88,11 +90,12 @@ async function summariseWithAnthropic(
   apiKey: string
 ): Promise<DraftSummary> {
   const prompt = `You are a memory assistant. Summarise the following AI conversation into:
-1. A concise summary (1-2 sentences)
-2. Key facts about the user as a JSON object
-3. Relevant tags as a JSON array
+1. A headline: one sentence (≤ 15 words) naming the core topic — used for search
+2. A detail: 2-5 sentences covering what was discussed, key decisions, and notable facts or entities
+3. Key facts about the user as a JSON object
+4. Relevant tags as a JSON array
 
-Return ONLY valid JSON: {"summary": "...", "facts": {...}, "tags": [...]}
+Return ONLY valid JSON: {"headline": "...", "detail": "...", "facts": {...}, "tags": [...]}
 
 User: ${conversation.userMessage}
 Assistant: ${conversation.assistantMessage}`;
@@ -128,11 +131,12 @@ async function summariseWithGemini(
   apiKey: string
 ): Promise<DraftSummary> {
   const prompt = `You are a memory assistant. Summarise the following AI conversation into:
-1. A concise summary (1-2 sentences)
-2. Key facts about the user as a JSON object
-3. Relevant tags as a JSON array
+1. A headline: one sentence (≤ 15 words) naming the core topic — used for search
+2. A detail: 2-5 sentences covering what was discussed, key decisions, and notable facts or entities
+3. Key facts about the user as a JSON object
+4. Relevant tags as a JSON array
 
-Return ONLY valid JSON: {"summary": "...", "facts": {...}, "tags": [...]}
+Return ONLY valid JSON: {"headline": "...", "detail": "...", "facts": {...}, "tags": [...]}
 
 User: ${conversation.userMessage}
 Assistant: ${conversation.assistantMessage}`;
@@ -204,9 +208,10 @@ async function handleCapture(
       summary = await summariseWithOpenAI(conversation, apiKey);
     }
 
-    // Only the summary, facts, and tags are sent to the vault backend
+    // Only the headline, detail, facts, and tags are sent to the vault backend
     const draft = await postDraft({
-      summary_text: summary.summary,
+      summary_text: summary.headline,
+      detail_summary: summary.detail,
       candidate_facts_json: summary.facts,
       suggested_tags_json: summary.tags,
       source_platform: conversation.platform,

@@ -11,6 +11,7 @@ export interface Draft {
   id: number;
   user_id: number;
   summary_text: string;
+  detail_summary: string | null;
   candidate_facts_json: Record<string, string> | null;
   suggested_tags_json: string[] | null;
   draft_status: DraftStatus;
@@ -24,6 +25,7 @@ export interface Memory {
   user_id: number;
   source_platform: string;
   summary_text: string;
+  detail_summary: string | null;
   approved_facts_json: Record<string, string> | null;
   tags_json: string[] | null;
   save_mode: SaveMode;
@@ -46,7 +48,8 @@ export interface ProfileFact {
 }
 
 export interface MemoryResult {
-  summary: string;
+  headline: string;
+  detail: string | null;
   tags: string[];
   source_platform: string;
   save_mode: string;

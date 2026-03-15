@@ -51,7 +51,8 @@ class ContextService:
 
         memory_results = [
             MemoryResult(
-                summary=m.summary_text,
+                headline=m.summary_text,
+                detail=m.detail_summary,
                 tags=m.tags_json or [],
                 source_platform=m.source_platform,
                 save_mode=m.save_mode.value,

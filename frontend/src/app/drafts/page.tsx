@@ -23,10 +23,14 @@ export default function DraftsPage() {
     getDrafts().then(setDrafts).finally(() => setLoading(false));
   }, [router]);
 
-  async function approve(draft: Draft, saveMode: SaveMode) {
+  async function approve(draft: Draft, saveMode: SaveMode, headline: string, detail: string) {
     setActionId(draft.id);
     try {
-      await approveDraft(draft.id, { save_mode: saveMode });
+      await approveDraft(draft.id, {
+        save_mode: saveMode,
+        summary_text: headline,
+        detail_summary: detail || null,
+      });
       setDrafts((prev) => prev.filter((d) => d.id !== draft.id));
     } finally { setActionId(null); }
   }
@@ -62,7 +66,7 @@ export default function DraftsPage() {
           key={draft.id}
           draft={draft}
           loading={actionId === draft.id}
-          onApprove={(mode) => approve(draft, mode)}
+          onApprove={(mode, headline, detail) => approve(draft, mode, headline, detail)}
           onDismiss={() => dismiss(draft.id)}
           onPrivate={() => markDraftPrivate(draft.id)}
         />
@@ -76,21 +80,45 @@ function DraftCard({
 }: {
   draft: Draft;
   loading: boolean;
-  onApprove: (mode: SaveMode) => void;
+  onApprove: (mode: SaveMode, headline: string, detail: string) => void;
   onDismiss: () => void;
   onPrivate: () => void;
 }) {
   const [saveMode, setSaveMode] = useState<SaveMode>("summary_only");
+  const [headline, setHeadline] = useState(draft.summary_text);
+  const [detail, setDetail] = useState(draft.detail_summary ?? "");
   const expiresAt = new Date(draft.expires_at);
   const expiresHours = Math.round((expiresAt.getTime() - Date.now()) / 3_600_000);
 
   return (
     <div style={{ background: "white", borderRadius: 8, padding: 20, marginBottom: 16, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
         <span style={{ fontSize: 12, color: "#6b7280" }}>{draft.expires_at ? `Expires in ${expiresHours}h` : ""}</span>
         <span style={{ fontSize: 12, background: "#dbeafe", color: "#1e40af", borderRadius: 4, padding: "2px 6px" }}>awaiting review</span>
       </div>
-      <p style={{ fontWeight: 600, marginBottom: 12 }}>{draft.summary_text}</p>
+
+      {/* Headline field */}
+      <div style={{ marginBottom: 10 }}>
+        <label style={{ fontSize: 11, color: "#6b7280", display: "block", marginBottom: 4 }}>Headline — used for search</label>
+        <input
+          value={headline}
+          onChange={(e) => setHeadline(e.target.value)}
+          style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 4, fontSize: 13, boxSizing: "border-box" }}
+        />
+      </div>
+
+      {/* Detail field */}
+      <div style={{ marginBottom: 12 }}>
+        <label style={{ fontSize: 11, color: "#6b7280", display: "block", marginBottom: 4 }}>Details — returned to AI</label>
+        <textarea
+          value={detail}
+          onChange={(e) => setDetail(e.target.value)}
+          rows={4}
+          placeholder="No detail summary — the headline will be used."
+          style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 4, fontSize: 13, resize: "vertical", boxSizing: "border-box" }}
+        />
+      </div>
+
       {draft.candidate_facts_json && Object.keys(draft.candidate_facts_json).length > 0 && (
         <div style={{ marginBottom: 12 }}>
           <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>Extracted facts</p>
@@ -119,7 +147,7 @@ function DraftCard({
           <option value="full_conversation">Full conversation</option>
         </select>
         <button
-          onClick={() => onApprove(saveMode)}
+          onClick={() => onApprove(saveMode, headline, detail)}
           disabled={loading}
           style={{ background: "#16a34a", color: "white", border: "none", borderRadius: 4, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}
         >Save to Memory</button>

@@ -26,6 +26,7 @@ class MemoryDraft(Base):
     )
     source_platform: Mapped[str | None] = mapped_column(String(50), nullable=True)
     summary_text: Mapped[str] = mapped_column(Text)
+    detail_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     candidate_facts_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     suggested_tags_json: Mapped[list | None] = mapped_column(JSON, nullable=True)
     draft_status: Mapped[DraftStatus] = mapped_column(

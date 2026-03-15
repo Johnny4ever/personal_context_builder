@@ -8,7 +8,8 @@ export interface CapturedConversation {
 }
 
 export interface DraftSummary {
-  summary: string;
+  headline: string;
+  detail: string;
   facts: Record<string, string>;
   tags: string[];
 }

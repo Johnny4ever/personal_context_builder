@@ -53,6 +53,7 @@ export async function vaultLogin(
 
 export async function postDraft(draft: {
   summary_text: string;
+  detail_summary?: string | null;
   candidate_facts_json: Record<string, string> | null;
   suggested_tags_json: string[] | null;
   source_platform: string;

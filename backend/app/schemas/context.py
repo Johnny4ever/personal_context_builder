@@ -7,7 +7,8 @@ class ContextQuery(BaseModel):
 
 
 class MemoryResult(BaseModel):
-    summary: str
+    headline: str
+    detail: str | None
     tags: list[str]
     source_platform: str
     save_mode: str

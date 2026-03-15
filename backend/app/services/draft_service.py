@@ -48,6 +48,7 @@ class DraftService:
             temp_conversation_id=temp.id,
             source_platform=data.source_platform,
             summary_text=data.summary_text,
+            detail_summary=data.detail_summary,
             candidate_facts_json=data.candidate_facts_json,
             suggested_tags_json=data.suggested_tags_json,
             expires_at=(datetime.now(timezone.utc) + timedelta(days=DRAFT_EXPIRY_DAYS)).replace(tzinfo=None),
@@ -102,6 +103,7 @@ class DraftService:
             ).platform
             or "unknown",
             summary_text=summary,
+            detail_summary=data.detail_summary,
             approved_facts_json=facts,
             tags_json=tags,
             save_mode=data.save_mode,
